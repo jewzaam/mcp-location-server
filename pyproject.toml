@@ -7,7 +7,7 @@ name = "mcp-location-server"
 version = "0.1.0"
 description = "MCP server for geocoding addresses to latitude/longitude coordinates"
 authors = [
-    {name = "MCP Playground", email = "nmalik@redhat.com"}
+    {name = "MCP Playground", email = "jewzaam@gmail.com"}
 ]
 readme = "README.md"
 license = {text = "MIT"}

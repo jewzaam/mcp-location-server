@@ -11,55 +11,103 @@ A Model Context Protocol (MCP) server for geocoding addresses and coordinates us
 
 ## Installation
 
+### Quick Install (Recommended)
+
 ```bash
-# From project root with virtual environment activated
-pip install -e ./mcp-location-server
+# Complete install: MCP server + Cursor configuration
+make install
+```
+
+Or install components separately:
+
+```bash
+# Install MCP server only
+make install-mcp
+
+# Configure Cursor IDE (after MCP server is installed)
+make install-cursor
+```
+
+This will:
+- Create a Python virtual environment
+- Install the package in development mode
+- Generate Cursor IDE configuration
+
+### Manual Installation
+
+```bash
+# Create virtual environment
+python3 -m venv .venv
+source .venv/bin/activate
+
+# Install package
+pip install -e .
+```
+
+### Available Make Commands
+
+Run `make help` to see all available commands:
+
+```bash
+make help                    # Show all available commands
+make install                 # Complete install: MCP server + Cursor configuration
+make install-mcp             # Install MCP server only
+make install-cursor          # Configure Cursor IDE integration
+make install-dev             # Install with development dependencies
+make test                    # Run all tests
+make test-server             # Run comprehensive server tests
+make dev                     # Start server in development mode
+make format                  # Format code with black and isort
+make lint                    # Run linting with ruff and mypy
+make check                   # Run linting and tests
+make clean                   # Clean up generated files
+make doctor                  # Check if everything is working
+make status                  # Show project status
 ```
 
 ## Cursor IDE Setup
 
 ### Prerequisites
 - **Cursor IDE** (latest version)
-- **Python 3.8+** with this MCP server installed
+- **Python 3.8+** with this MCP server installed (use `make install`)
 - **Node.js** (optional, for MCP Inspector testing)
 
-### Step 1: Configure MCP in Cursor
+### Easy Setup with Makefile
 
-The MCP configuration file is located at:
-- **Linux**: `~/.cursor/mcp.json`  
-- **macOS**: `~/Library/Application Support/Cursor/mcp.json`
-- **Windows**: `%APPDATA%\Cursor\mcp.json`
+**Option 1: Complete Setup (Recommended)**
+```bash
+make install
+```
+This installs the MCP server and shows Cursor configuration in one step.
 
-### Step 2: Add Location Server Configuration
+**Option 2: Separate Steps**
+```bash
+# Step 1: Install MCP server
+make install-mcp
 
-Add this to your `mcp.json` file:
-
-```json
-{
-  "mcpServers": {
-    "location": {
-      "command": "/absolute/path/to/your/venv/bin/python",
-      "args": ["-m", "mcp_location_server.server"],
-      "cwd": "/absolute/path/to/mcp-location-server",
-      "env": {
-        "PYTHONPATH": "/absolute/path/to/your/venv/lib/python3.x/site-packages"
-      }
-    }
-  }
-}
+# Step 2: Configure Cursor IDE
+make install-cursor
 ```
 
-**Important**: 
-- Replace `/absolute/path/to/your/venv` with your actual virtual environment path
-- Replace `/absolute/path/to/mcp-location-server` with your actual project path
-- Update Python version in PYTHONPATH (`python3.x` → your version)
+**After either option:**
+1. **Copy the generated JSON** to your MCP configuration file:
+   - **Linux**: `~/.cursor/mcp.json`  
+   - **macOS**: `~/Library/Application Support/Cursor/mcp.json`
+   - **Windows**: `%APPDATA%\Cursor\mcp.json`
 
-#### Alternative Configuration (System Python)
+2. **Restart Cursor IDE** completely
+
+3. **Enable the server**: Go to **Settings** → **MCP** and enable the "location" server
+
+### Manual Configuration
+
+If you prefer manual setup, add this to your `mcp.json` file:
+
 ```json
 {
   "mcpServers": {
     "location": {
-      "command": "python3",
+      "command": "/absolute/path/to/mcp-location-server/.venv/bin/python",
       "args": ["-m", "mcp_location_server.server"],
       "cwd": "/absolute/path/to/mcp-location-server"
     }
@@ -67,15 +115,9 @@ Add this to your `mcp.json` file:
 }
 ```
 
-### Step 3: Activate in Cursor
+**Important**: Replace `/absolute/path/to/mcp-location-server` with your actual project path.
 
-1. **Save** the `mcp.json` file
-2. **Restart Cursor IDE** (required for config changes)
-3. Go to **Settings** → **MCP**
-4. Verify "location" server appears and is **enabled**
-5. Click **Refresh** if server doesn't appear
-
-### Step 4: Test Integration
+### Test Integration
 
 In Cursor's AI panel (`Ctrl+L` or `Cmd+L`), switch to Agent mode (`Ctrl+.`) and test with the examples below.
 

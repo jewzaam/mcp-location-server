@@ -12,8 +12,9 @@ from mcp.types import ToolAnnotations
 from pydantic import ValidationError
 import httpx
 
-from .models import GeocodeRequest, GeocodeResponse
+from .models import GeocodeRequest, GeocodeResponse, ElevationRequest, ElevationResponse
 from .geocoding import get_geocoding_service, close_geocoding_service
+from .elevation import get_elevation_service, close_elevation_service
 
 
 class LocationServer:
@@ -180,6 +181,91 @@ class LocationServer:
                 "longitude": longitude,
                 "found": False,
             }
+    
+    async def get_elevation(
+        self,
+        latitude: float,
+        longitude: float,
+        dataset: str = "srtm90m"
+    ) -> Dict[str, Any]:
+        """
+        Get elevation data for coordinates.
+        
+        Args:
+            latitude: Latitude in decimal degrees (-90 to 90)
+            longitude: Longitude in decimal degrees (-180 to 180)
+            dataset: Elevation dataset to use (default: srtm90m)
+            
+        Returns:
+            Dictionary containing elevation data in meters and feet
+        """
+        self.logger.info(f"Elevation request: lat={latitude}, lon={longitude}, dataset={dataset}")
+        
+        try:
+            # Validate the request
+            request = ElevationRequest(
+                latitude=latitude,
+                longitude=longitude,
+                dataset=dataset
+            )
+            
+            # Get the elevation service
+            service = await get_elevation_service()
+            
+            # Get elevation data
+            response = await service.get_elevation(request)
+            
+            if response.results:
+                result = response.results[0]
+                self.logger.info(f"Elevation successful: {result.elevation.meters}m")
+                
+                return {
+                    "latitude": result.latitude,
+                    "longitude": result.longitude,
+                    "elevation_meters": result.elevation.meters,
+                    "elevation_feet": result.elevation.feet,
+                    "dataset": result.elevation.dataset,
+                    "found": True
+                }
+            else:
+                self.logger.info("Elevation: no data available for coordinates")
+                return {
+                    "latitude": latitude,
+                    "longitude": longitude,
+                    "elevation_meters": None,
+                    "elevation_feet": None,
+                    "dataset": dataset,
+                    "found": False,
+                    "message": "No elevation data available for these coordinates"
+                }
+            
+        except ValidationError as e:
+            self.logger.error(f"Request validation error: {e}")
+            return {
+                "error": "Invalid request",
+                "message": str(e),
+                "latitude": latitude,
+                "longitude": longitude,
+                "found": False
+            }
+        except httpx.HTTPError as e:
+            self.logger.error(f"HTTP error during elevation lookup: {e}")
+            return {
+                "error": "API request failed", 
+                "message": str(e),
+                "latitude": latitude,
+                "longitude": longitude,
+                "found": False
+            }
+        except Exception as e:
+            self.logger.error(f"Unexpected error during elevation lookup: {e}")
+            return {
+                "error": "Internal server error",
+                "message": "An unexpected error occurred",
+                "latitude": latitude,
+                "longitude": longitude,
+                "found": False
+            }
 
 
 async def create_server() -> FastMCP:
@@ -190,9 +276,13 @@ async def create_server() -> FastMCP:
     mcp = FastMCP(
         "location_mcp_server",
         instructions=(
-            "You are a location and geocoding assistant. Use the provided tools to help users "
-            "find coordinates for addresses and locations, or convert coordinates back to addresses. "
-            "You can handle addresses, cities, landmarks, and points of interest."
+            "You are a location and geocoding assistant with elevation lookup capabilities. "
+            "Available tools: (1) geocode - convert addresses/places to coordinates, "
+            "(2) reverse_geocode - convert coordinates to addresses, "
+            "(3) get_elevation - get elevation data for coordinates. "
+            "Common workflows: address → geocode → coordinates → get_elevation, "
+            "or coordinates → reverse_geocode → address. "
+            "You can handle addresses, cities, landmarks, and points of interest worldwide."
         ),
     )
     
@@ -207,7 +297,9 @@ async def create_server() -> FastMCP:
         description=(
             "Convert an address, city name, or landmark to latitude/longitude coordinates. "
             "Supports various formats like '123 Main St, City, State', 'Tokyo, Japan', "
-            "or 'Eiffel Tower'. Returns up to the specified number of results."
+            "or 'Eiffel Tower'. Returns up to the specified number of results. "
+            "Use these coordinates with get_elevation to find elevation data, or use "
+            "reverse_geocode to convert coordinates back to addresses."
         ),
         annotations=ToolAnnotations(
             readOnlyHint=True,
@@ -225,7 +317,31 @@ async def create_server() -> FastMCP:
         title="Reverse geocode coordinates to address",
         description=(
             "Convert latitude/longitude coordinates to a human-readable address. "
-            "Provide decimal degree coordinates (e.g., lat=40.7128, lon=-74.0060 for NYC)."
+            "Provide decimal degree coordinates (e.g., lat=40.7128, lon=-74.0060 for NYC). "
+            "Useful for interpreting coordinates from GPS devices, maps, or other sources. "
+            "Coordinates can come from the geocode tool or be provided directly."
+        ),
+        annotations=ToolAnnotations(
+            readOnlyHint=True,
+            destructiveHint=False,
+            idempotentHint=True,
+            openWorldHint=True,
+        ),
+        structured_output=True,
+    )
+    
+    # Add the elevation tool
+    mcp.add_tool(
+        location_server.get_elevation,
+        "get_elevation", 
+        title="Get elevation data for coordinates",
+        description=(
+            "Get elevation data for latitude/longitude coordinates. "
+            "Returns elevation in both meters and feet above sea level. "
+            "Provide decimal degree coordinates (e.g., lat=35.6894, lon=-78.7767). "
+            "If you have an address or place name, use the geocode tool first to get coordinates. "
+            "Optionally specify dataset: srtm90m (90m resolution, global), srtm30m (30m, global), "
+            "aster30m (30m, global), ned10m (10m, US only), or others. Default is srtm90m."
         ),
         annotations=ToolAnnotations(
             readOnlyHint=True,
@@ -272,8 +388,9 @@ async def main() -> None:
         logging.error(f"Server error: {e}")
         raise
     finally:
-        # Clean up the geocoding service
+        # Clean up the services
         await close_geocoding_service()
+        await close_elevation_service()
 
 
 if __name__ == "__main__":

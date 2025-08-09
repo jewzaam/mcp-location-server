@@ -2,10 +2,10 @@
 # ==========================
 
 # Variables
-PYTHON := python3
-UV := uv
 VENV_DIR := .venv
 VENV_PYTHON := $(VENV_DIR)/bin/python
+PYTHON := python3
+UV := $(VENV_DIR)/bin/uv
 
 # Colors for output
 BLUE := \033[34m
@@ -37,7 +37,7 @@ venv: ## Create Python virtual environment
 
 # Install uv
 .PHONY: uv
-uv:
+uv: venv ## Install uv
 	@if [ ! -f "$(VENV_DIR)/bin/uv" ]; then \
 		printf "$(BLUE)Installing uv...$(RESET)\n"; \
 		$(VENV_PYTHON) -m ensurepip --upgrade; \
@@ -47,7 +47,7 @@ uv:
 
 # Install requirements
 .PHONY: pip-install-test
-pip-install-test: uv venv ## Install package dependencies
+pip-install-test: uv ## Install package dependencies
 	@printf "$(BLUE)Installing dependencies...$(RESET)\n"
 	$(UV) pip install -r requirements-test.txt
 	@printf "$(GREEN)✅ Dependencies installed$(RESET)\n"
@@ -83,14 +83,14 @@ install-cursor: install-mcp ## Install MCP Location server for Cursor integratio
 
 # Run tests
 .PHONY: test
-test: venv pip-install-test ## Run all tests
+test: pip-install-test ## Run all tests
 	@printf "$(BLUE)Running tests...$(RESET)\n"
 	$(VENV_PYTHON) -m pytest tests/ -v
 	@printf "$(GREEN)✅ Tests completed$(RESET)\n"
 
 # Lint code
 .PHONY: lint
-lint: venv pip-install-test ## Run linting with ruff and mypy
+lint: pip-install-test ## Run linting with ruff and mypy
 	@printf "$(BLUE)Running linters...$(RESET)\n"
 	$(VENV_PYTHON) -m ruff check src/ tests/
 	$(VENV_PYTHON) -m mypy src/

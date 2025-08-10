@@ -9,4 +9,4 @@ __version__ = "0.1.0"
 __author__ = "MCP Playground"
 __email__ = "jewzaam@gmail.com"
 
-__all__ = ["__version__", "__author__", "__email__"] 
+__all__ = ["__author__", "__email__", "__version__"]

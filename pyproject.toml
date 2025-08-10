@@ -11,14 +11,12 @@ authors = [
 ]
 readme = "README.md"
 license = {text = "MIT"}
-requires-python = ">=3.8"
+requires-python = ">=3.10"
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
@@ -73,7 +71,7 @@ multi_line_output = 3
 line_length = 88
 
 [tool.mypy]
-python_version = "3.8"
+python_version = "3.10"
 warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = true
@@ -87,11 +85,27 @@ warn_no_return = true
 warn_unreachable = true
 strict_equality = true
 
+[[tool.mypy.overrides]]
+module = "mcp_location_server.geocoding"
+disable_error_code = ["name-defined", "call-arg"]
+
 [tool.ruff]
 line-length = 88
-target-version = "py38"
+target-version = "py310"
+
+[tool.ruff.lint]
 select = ["E", "F", "W", "I", "N", "UP", "YTT", "S", "BLE", "FBT", "B", "A", "COM", "C4", "DTZ", "T10", "DJ", "EM", "EXE", "FA", "ISC", "ICN", "G", "INP", "PIE", "T20", "PYI", "PT", "Q", "RSE", "RET", "SLF", "SLOT", "SIM", "TID", "TCH", "INT", "ARG", "PTH", "TD", "FIX", "ERA", "PD", "PGH", "PL", "TRY", "FLY", "NPY", "PERF", "FURB", "LOG", "RUF"]
-ignore = ["E501", "S101", "PLR0913", "PLR0912", "PLR0915"]
+ignore = [
+    "E501",     # Line too long (handled by formatter)
+    "S101",     # Use of assert
+    "PLR0913",  # Too many arguments
+    "PLR0912",  # Too many branches
+    "PLR0915",  # Too many statements
+    "PLW0603",  # Global statement usage (singleton pattern)
+    "TRY300",   # Else after return (guard clause pattern)
+    "F821",     # Undefined name 'types' in TYPE_CHECKING context (mypy limitation)
+    "PYI036",   # types.TracebackType in __aexit__ (correct annotation per PEP 544)
+]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

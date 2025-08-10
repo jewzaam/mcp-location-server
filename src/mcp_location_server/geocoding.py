@@ -86,7 +86,12 @@ class NominatimGeocodingService:
         """Async context manager entry."""
         return self
 
-    async def __aexit__(self, exc_type: type[BaseException] | None, exc_val: BaseException | None, exc_tb: types.TracebackType | None) -> None:
+    async def __aexit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_val: BaseException | None,
+        exc_tb: types.TracebackType | None,
+    ) -> None:
         """Async context manager exit."""
         await self.client.aclose()
 
@@ -176,7 +181,9 @@ class NominatimGeocodingService:
             raise ValueError(msg) from e
 
         if not (MIN_LATITUDE <= lat <= MAX_LATITUDE):
-            msg = f"Latitude must be between {MIN_LATITUDE} and {MAX_LATITUDE}, got {lat}"
+            msg = (
+                f"Latitude must be between {MIN_LATITUDE} and {MAX_LATITUDE}, got {lat}"
+            )
             raise ValueError(msg)
 
         if not (MIN_LONGITUDE <= lon <= MAX_LONGITUDE):

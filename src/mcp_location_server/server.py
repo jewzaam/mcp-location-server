@@ -118,7 +118,11 @@ class LocationServer:
         Returns:
             Dictionary containing reverse geocoding result
         """
-        self.logger.info("Reverse geocoding request: lat=%f, lon=%f", latitude, longitude)
+        self.logger.info(
+            "Reverse geocoding request: lat=%f, lon=%f",
+            latitude,
+            longitude,
+        )
 
         try:
             # Get the geocoding service
@@ -200,7 +204,12 @@ class LocationServer:
         Returns:
             Dictionary containing elevation data in meters and feet
         """
-        self.logger.info("Elevation request: lat=%f, lon=%f, dataset=%s", latitude, longitude, dataset)
+        self.logger.info(
+            "Elevation request: lat=%f, lon=%f, dataset=%s",
+            latitude,
+            longitude,
+            dataset,
+        )
 
         try:
             # Validate the request

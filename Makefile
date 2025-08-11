@@ -38,11 +38,13 @@ venv: ## Create Python virtual environment
 # Install uv
 .PHONY: uv
 uv: venv ## Install uv
-	@if [ ! -f "$(VENV_DIR)/bin/uv" ]; then \
+	@if [ ! -f "$(UV)" ]; then \
 		printf "$(BLUE)Installing uv...$(RESET)\n"; \
-		$(VENV_PYTHON) -m ensurepip --upgrade; \
+		$(VENV_PYTHON) -m pip install --upgrade pip; \
 		$(VENV_PYTHON) -m pip install uv; \
 		printf "$(GREEN)✅ uv installed$(RESET)\n"; \
+	else \
+		printf "$(YELLOW)uv already installed$(RESET)\n"; \
 	fi
 
 # Install requirements
@@ -50,7 +52,6 @@ uv: venv ## Install uv
 pip-install-test: uv ## Install package dependencies
 	@printf "$(BLUE)Installing dependencies...$(RESET)\n"
 	$(UV) pip install -r requirements-test.txt
-	$(UV) pip install -e .
 	@printf "$(GREEN)✅ Dependencies installed$(RESET)\n"
 
 # Installation targets
@@ -58,6 +59,7 @@ pip-install-test: uv ## Install package dependencies
 
 install-mcp: pip-install-test ## Install the MCP Location server package
 	@printf "$(BLUE)Installing MCP Location Server package...$(RESET)\n"
+	$(UV) pip install -e .
 	@printf "$(GREEN)MCP Location Server package installed successfully!$(RESET)\n"
 	@printf "\n"
 	@printf "$(CYAN)The server can now be run with:$(RESET)\n"
@@ -86,6 +88,7 @@ install-cursor: install-mcp ## Install MCP Location server for Cursor integratio
 .PHONY: test
 test: pip-install-test ## Run all tests
 	@printf "$(BLUE)Running tests...$(RESET)\n"
+	$(UV) pip install -e .
 	$(VENV_PYTHON) -m pytest tests/ -v
 	@printf "$(GREEN)✅ Tests completed$(RESET)\n"
 
@@ -93,6 +96,7 @@ test: pip-install-test ## Run all tests
 .PHONY: lint
 lint: pip-install-test ## Run linting with ruff and mypy
 	@printf "$(BLUE)Running linters...$(RESET)\n"
+	$(UV) pip install -e .
 	$(VENV_PYTHON) -m ruff check src/ tests/
 	$(VENV_PYTHON) -m mypy src/
 	@printf "$(GREEN)✅ Linting complete$(RESET)\n"

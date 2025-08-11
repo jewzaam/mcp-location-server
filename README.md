@@ -50,19 +50,11 @@ Run `make help` to see all available commands:
 
 ```bash
 make help                    # Show all available commands
-make install                 # Complete install: MCP server + Cursor configuration
 make install-mcp             # Install MCP server only
 make install-cursor          # Configure Cursor IDE integration
-make install-dev             # Install with development dependencies
 make test                    # Run all tests
-make test-server             # Run comprehensive server tests
-make dev                     # Start server in development mode
-make format                  # Format code with black and isort
 make lint                    # Run linting with ruff and mypy
-make check                   # Run linting and tests
 make clean                   # Clean up generated files
-make doctor                  # Check if everything is working
-make status                  # Show project status
 ```
 
 ## Cursor IDE Setup

@@ -6,6 +6,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import httpx
 import pytest
+from pydantic import ValidationError
 
 from mcp_location_server.elevation import OpenTopoDataElevationService
 from mcp_location_server.models import ElevationData, ElevationRequest
@@ -275,7 +276,7 @@ class TestElevationModels:
 
     def test_elevation_request_invalid_latitude(self):
         """Test elevation request with invalid latitude."""
-        with pytest.raises(ValueError, match="Latitude .* between"):
+        with pytest.raises(ValidationError, match="less than or equal to 90"):
             ElevationRequest(
                 latitude=INVALID_LATITUDE,  # Invalid latitude
                 longitude=TEST_LONGITUDE,
@@ -284,7 +285,7 @@ class TestElevationModels:
 
     def test_elevation_request_invalid_longitude(self):
         """Test elevation request with invalid longitude."""
-        with pytest.raises(ValueError, match="Longitude .* between"):
+        with pytest.raises(ValidationError, match="less than or equal to 180"):
             ElevationRequest(
                 latitude=TEST_LATITUDE,
                 longitude=INVALID_LONGITUDE,  # Invalid longitude

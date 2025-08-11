@@ -73,12 +73,7 @@ class OpenTopoDataElevationService:
         """Async context manager entry."""
         return self
 
-    async def __aexit__(
-        self,
-        exc_type: type[BaseException] | None,
-        exc_val: BaseException | None,
-        exc_tb: types.TracebackType | None,
-    ) -> None:
+    async def __aexit__(self, exc_type: type[BaseException] | None, exc_val: BaseException | None, exc_tb: types.TracebackType | None) -> None:
         """Async context manager exit."""
         await self.client.aclose()
 

@@ -35,13 +35,22 @@ venv: ## Create Python virtual environment
 		printf "$(YELLOW)Virtual environment already exists$(RESET)\n"; \
 	fi
 
+# Install uv
+.PHONY: uv
+uv: venv ## Install uv
+	@if [ ! -f "$(VENV_DIR)/bin/uv" ]; then \
+		printf "$(BLUE)Installing uv...$(RESET)\n"; \
+		$(VENV_PYTHON) -m ensurepip --upgrade; \
+		$(VENV_PYTHON) -m pip install uv; \
+		printf "$(GREEN)✅ uv installed$(RESET)\n"; \
+	fi
+
 # Install requirements
 .PHONY: pip-install-test
-pip-install-test: venv ## Install package dependencies
+pip-install-test: uv ## Install package dependencies
 	@printf "$(BLUE)Installing dependencies...$(RESET)\n"
-	$(VENV_PYTHON) -m pip install --upgrade pip
-	$(VENV_PYTHON) -m pip install -r requirements-test.txt
-	$(VENV_PYTHON) -m pip install -e .
+	$(UV) pip install -r requirements-test.txt
+	$(UV) pip install -e .
 	@printf "$(GREEN)✅ Dependencies installed$(RESET)\n"
 
 # Installation targets

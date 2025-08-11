@@ -29,7 +29,7 @@ help: ## Show this help message
 venv: ## Create Python virtual environment
 	@if [ ! -d "$(VENV_DIR)" ]; then \
 		printf "$(BLUE)Creating virtual environment...$(RESET)\n"; \
-		$(UV) venv $(VENV_DIR); \
+		$(PYTHON) -m venv $(VENV_DIR); \
 		printf "$(GREEN)✅ Virtual environment created$(RESET)\n"; \
 	else \
 		printf "$(YELLOW)Virtual environment already exists$(RESET)\n"; \

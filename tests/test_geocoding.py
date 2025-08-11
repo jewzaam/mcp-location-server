@@ -171,19 +171,19 @@ class TestNominatimGeocodingService:
         service = NominatimGeocodingService()
 
         # Test invalid latitude (too high)
-        with pytest.raises(ValueError, match="Latitude must be between -90 and 90"):
+        with pytest.raises(ValueError, match="Latitude must be between -90.0 and 90.0"):
             await service.reverse_geocode(91.0, 0.0)
 
         # Test invalid latitude (too low)
-        with pytest.raises(ValueError, match="Latitude must be between -90 and 90"):
+        with pytest.raises(ValueError, match="Latitude must be between -90.0 and 90.0"):
             await service.reverse_geocode(-91.0, 0.0)
 
         # Test invalid longitude (too high)
-        with pytest.raises(ValueError, match="Longitude must be between -180 and 180"):
+        with pytest.raises(ValueError, match="Longitude must be between -180.0 and 180.0"):
             await service.reverse_geocode(0.0, 181.0)
 
         # Test invalid longitude (too low)
-        with pytest.raises(ValueError, match="Longitude must be between -180 and 180"):
+        with pytest.raises(ValueError, match="Longitude must be between -180.0 and 180.0"):
             await service.reverse_geocode(0.0, -181.0)
 
         # Test non-numeric coordinates

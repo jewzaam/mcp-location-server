@@ -28,51 +28,40 @@ help: ## Show this help message
 .PHONY: venv
 venv: ## Create Python virtual environment
 	@if [ ! -d "$(VENV_DIR)" ]; then \
-		printf "$(BLUE)Creating virtual environment...$(RESET)\n"; \
 		$(PYTHON) -m venv $(VENV_DIR); \
 		printf "$(GREEN)✅ Virtual environment created$(RESET)\n"; \
-	else \
-		printf "$(YELLOW)Virtual environment already exists$(RESET)\n"; \
 	fi
 
 # Install uv
 .PHONY: uv
 uv: venv ## Install uv
 	@if [ ! -f "$(VENV_DIR)/bin/uv" ]; then \
-		printf "$(BLUE)Installing uv...$(RESET)\n"; \
 		$(VENV_PYTHON) -m ensurepip --upgrade; \
 		$(VENV_PYTHON) -m pip install uv; \
 		printf "$(GREEN)✅ uv installed$(RESET)\n"; \
 	fi
 
+
 # Install requirements
-.PHONY: pip-install-test
-pip-install-test: uv ## Install package dependencies
-	@printf "$(BLUE)Installing dependencies...$(RESET)\n"
-	$(UV) pip install -r requirements-test.txt
+.PHONY: requirements
+requirements: uv ## Install package dependencies
+	$(UV) pip install -r requirements.txt
 	@printf "$(GREEN)✅ Dependencies installed$(RESET)\n"
+
+# Install requirements
+.PHONY: requirements-dev
+requirements-dev: uv requirements ## Install package dependencies
+	$(UV) pip install -r requirements-dev.txt
+	@printf "$(GREEN)✅ Dev dependencies installed$(RESET)\n"
 
 # Installation targets
 .PHONY: install-mcp install-cursor
 
-install-mcp: pip-install-test ## Install the MCP Location server package
-	@printf "$(BLUE)Installing MCP Location Server package...$(RESET)\n"
-	@printf "$(GREEN)MCP Location Server package installed successfully!$(RESET)\n"
-	@printf "\n"
-	@printf "$(CYAN)The server can now be run with:$(RESET)\n"
-	@printf "  mcp-location-server\n"
-	@printf "  or\n"
-	@printf "  python -m mcp_location_server.server\n"
+install-mcp: requirements ## Install the MCP Location server package
+	$(UV) pip install -e .
+	@printf "$(GREEN)✅ MCP Location server installed$(RESET)\n"
 
 install-cursor: install-mcp ## Install MCP Location server for Cursor integration
-	@printf "$(BLUE)Setting up MCP Location Server for Cursor...$(RESET)\n"
-	@printf "$(YELLOW)Creating Cursor configuration...$(RESET)\n"
-	@if [ ! -d "$$HOME/.cursor" ]; then \
-		printf "$(RED)Error: Cursor directory ($$HOME/.cursor) not found!$(RESET)\n"; \
-		printf "$(YELLOW)Please install Cursor first or create the directory manually$(RESET)\n"; \
-		exit 1; \
-	fi
-	@printf "$(YELLOW)Updating Cursor MCP configuration...$(RESET)\n"
 	@$(VENV_PYTHON) scripts/update_cursor_config.py "$$(pwd)/$(VENV_PYTHON)" "$$(realpath .)"
 	@printf "\n$(GREEN)Cursor MCP integration completed!$(RESET)\n"
 	@printf "\n$(YELLOW)Next steps:$(RESET)\n"
@@ -83,15 +72,13 @@ install-cursor: install-mcp ## Install MCP Location server for Cursor integratio
 
 # Run tests
 .PHONY: test
-test: pip-install-test ## Run all tests
-	@printf "$(BLUE)Running tests...$(RESET)\n"
-	$(VENV_PYTHON) -m pytest tests/ -v
+test: requirements-dev ## Run all tests
+	PYTHONPATH=src $(VENV_PYTHON) -m pytest tests/ -v
 	@printf "$(GREEN)✅ Tests completed$(RESET)\n"
 
 # Lint code
 .PHONY: lint
-lint: pip-install-test ## Run linting with ruff and mypy
-	@printf "$(BLUE)Running linters...$(RESET)\n"
+lint: requirements-dev ## Run linting with ruff and mypy
 	$(VENV_PYTHON) -m ruff check src/ tests/
 	$(VENV_PYTHON) -m mypy src/
 	@printf "$(GREEN)✅ Linting complete$(RESET)\n"
@@ -99,7 +86,6 @@ lint: pip-install-test ## Run linting with ruff and mypy
 # Clean up
 .PHONY: clean
 clean: ## Clean up generated files
-	@printf "$(BLUE)Cleaning up...$(RESET)\n"
 	rm -rf build/ dist/ *.egg-info/ src/*.egg-info/
 	find . -type d -name __pycache__ -exec rm -rf {} +
 	find . -type f -name "*.pyc" -delete

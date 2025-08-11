@@ -4,8 +4,11 @@
 # Variables
 VENV_DIR := .venv
 VENV_PYTHON := $(VENV_DIR)/bin/python
+VENV_UV := $(VENV_DIR)/bin/uv
+VENV_CURSOR_DIR := .venv-cursor
+VENV_CURSOR_PYTHON := $(VENV_CURSOR_DIR)/bin/python
+VENV_CURSOR_UV := $(VENV_CURSOR_DIR)/bin/uv
 PYTHON := python3
-UV := $(VENV_DIR)/bin/uv
 
 # Colors for output
 BLUE := \033[34m
@@ -45,24 +48,36 @@ uv: venv ## Install uv
 # Install requirements
 .PHONY: requirements
 requirements: uv ## Install package dependencies
-	$(UV) pip install -r requirements.txt
+	$(VENV_UV) pip install -r requirements.txt
 	@printf "$(GREEN)✅ Dependencies installed$(RESET)\n"
 
 # Install requirements
 .PHONY: requirements-dev
 requirements-dev: uv requirements ## Install package dependencies
-	$(UV) pip install -r requirements-dev.txt
+	$(VENV_UV) pip install -r requirements-dev.txt
 	@printf "$(GREEN)✅ Dev dependencies installed$(RESET)\n"
 
 # Installation targets
-.PHONY: install-mcp install-cursor
+.PHONY: install-mcp install-cursor venv-cursor
 
-install-mcp: requirements ## Install the MCP Location server package
-	$(UV) pip install -e .
-	@printf "$(GREEN)✅ MCP Location server installed$(RESET)\n"
+venv-cursor: ## Create dedicated venv for Cursor with production deps only
+	@if [ ! -d "$(VENV_CURSOR_DIR)" ]; then \
+		$(PYTHON) -m venv $(VENV_CURSOR_DIR); \
+		printf "$(GREEN)✅ Cursor venv created$(RESET)\n"; \
+	fi
 
-install-cursor: install-mcp ## Install MCP Location server for Cursor integration
-	@$(VENV_PYTHON) scripts/update_cursor_config.py "$$(pwd)/$(VENV_PYTHON)" "$$(realpath .)"
+.PHONY: uv-cursor
+uv-cursor: venv-cursor ## Install uv for Cursor
+	@if [ ! -f "$(VENV_CURSOR_DIR)/bin/uv" ]; then \
+		$(VENV_CURSOR_PYTHON) -m ensurepip --upgrade; \
+		$(VENV_CURSOR_PYTHON) -m pip install uv; \
+		printf "$(GREEN)✅ uv installed$(RESET)\n"; \
+	fi
+
+install-cursor: uv-cursor ## Install MCP Location server for Cursor integration
+	$(VENV_CURSOR_UV) pip install -r requirements.txt --python $(VENV_CURSOR_PYTHON)
+	$(VENV_CURSOR_UV) pip install -e . --python $(VENV_CURSOR_PYTHON)
+	@$(VENV_CURSOR_PYTHON) scripts/update_cursor_config.py "$$(pwd)/$(VENV_CURSOR_PYTHON)" "$$(realpath .)"
 	@printf "\n$(GREEN)Cursor MCP integration completed!$(RESET)\n"
 	@printf "\n$(YELLOW)Next steps:$(RESET)\n"
 	@printf "  1. Restart Cursor to load the new MCP server\n"
@@ -84,10 +99,14 @@ lint: requirements-dev ## Run linting with ruff and mypy
 	@printf "$(GREEN)✅ Linting complete$(RESET)\n"
 
 # Clean up
-.PHONY: clean
-clean: ## Clean up generated files
+.PHONY: clean clean-all
+clean: ## Clean up generated files and dev venv
 	rm -rf build/ dist/ *.egg-info/ src/*.egg-info/
 	find . -type d -name __pycache__ -exec rm -rf {} +
 	find . -type f -name "*.pyc" -delete
 	rm -rf $(VENV_DIR)
-	@printf "$(GREEN)✅ Cleanup complete$(RESET)\n"
+	@printf "$(GREEN)✅ Dev cleanup complete$(RESET)\n"
+
+clean-all: clean ## Clean up everything including Cursor venv
+	rm -rf $(VENV_CURSOR_DIR)
+	@printf "$(GREEN)✅ Full cleanup complete$(RESET)\n"

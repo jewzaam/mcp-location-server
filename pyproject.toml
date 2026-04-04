@@ -10,16 +10,16 @@ authors = [
     {name = "MCP Playground", email = "jewzaam@gmail.com"}
 ]
 readme = "README.md"
-license = {text = "MIT"}
-requires-python = ">=3.10"
+license = {file = "LICENSE"}
+requires-python = ">=3.12"
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
-    "License :: OSI Approved :: MIT License",
+    "License :: OSI Approved :: Apache Software License",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
 ]
 dependencies = [
     "mcp>=1.0.0",
@@ -30,11 +30,14 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
-    "pytest>=7.0.0",
+    "pytest>=7.0",
     "pytest-asyncio>=0.21.0",
-    "httpx>=0.25.0",
-    "mypy>=1.0.0",
-    "ruff>=0.1.0",
+    "pytest-cov>=4.0",
+    "pytest-mock>=3.0",
+    "black>=23.0",
+    "flake8>=6.0",
+    "mypy>=1.11",
+    "mutmut>=2.0,<3.0",
 ]
 
 [project.scripts]
@@ -46,10 +49,8 @@ where = ["src"]
 [tool.setuptools.package-dir]
 "" = "src"
 
-
-
 [tool.mypy]
-python_version = "3.10"
+python_version = "3.12"
 warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = true
@@ -66,24 +67,6 @@ strict_equality = true
 [[tool.mypy.overrides]]
 module = "mcp_location_server.geocoding"
 disable_error_code = ["name-defined", "call-arg"]
-
-[tool.ruff]
-line-length = 88
-target-version = "py310"
-
-[tool.ruff.lint]
-select = ["E", "F", "W", "I", "N", "UP", "YTT", "S", "BLE", "FBT", "B", "A", "COM", "C4", "DTZ", "T10", "DJ", "EM", "EXE", "FA", "ISC", "ICN", "G", "INP", "PIE", "T20", "PYI", "PT", "Q", "RSE", "RET", "SLF", "SLOT", "SIM", "TID", "TCH", "INT", "ARG", "PTH", "TD", "FIX", "ERA", "PD", "PGH", "PL", "TRY", "FLY", "NPY", "PERF", "FURB", "LOG", "RUF"]
-ignore = [
-    "E501",     # Line too long (handled by formatter)
-    "S101",     # Use of assert
-    "PLR0913",  # Too many arguments
-    "PLR0912",  # Too many branches
-    "PLR0915",  # Too many statements
-    "PLW0603",  # Global statement usage (singleton pattern)
-    "TRY300",   # Else after return (guard clause pattern)
-    "F821",     # Undefined name 'types' in TYPE_CHECKING context (mypy limitation)
-    "PYI036",   # types.TracebackType in __aexit__ (correct annotation per PEP 544)
-]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

@@ -51,9 +51,17 @@ class TestOpenTopoDataElevationService:
     @pytest.mark.asyncio
     async def test_meters_to_feet_conversion(self, elevation_service):
         """Test meters to feet conversion."""
-        assert elevation_service._meters_to_feet(CONVERSION_FACTOR_100M) == pytest.approx(CONVERSION_FACTOR_100M_FEET, rel=1e-3)  # noqa: SLF001
+        assert elevation_service._meters_to_feet(
+            CONVERSION_FACTOR_100M
+        ) == pytest.approx(
+            CONVERSION_FACTOR_100M_FEET, rel=1e-3
+        )  # noqa: SLF001
         assert elevation_service._meters_to_feet(0.0) == 0.0  # noqa: SLF001
-        assert elevation_service._meters_to_feet(TEST_ELEVATION_METERS) == pytest.approx(TEST_ELEVATION_FEET, rel=1e-3)  # noqa: SLF001
+        assert elevation_service._meters_to_feet(
+            TEST_ELEVATION_METERS
+        ) == pytest.approx(
+            TEST_ELEVATION_FEET, rel=1e-3
+        )  # noqa: SLF001
 
     @pytest.mark.asyncio
     async def test_get_elevation_success(self, elevation_service, sample_api_response):
@@ -147,7 +155,9 @@ class TestOpenTopoDataElevationService:
             assert len(response.results) == 0
 
     @pytest.mark.asyncio
-    async def test_get_elevation_simple_success(self, elevation_service, sample_api_response):
+    async def test_get_elevation_simple_success(
+        self, elevation_service, sample_api_response
+    ):
         """Test simple elevation lookup."""
         with patch.object(elevation_service.client, "get") as mock_get:
             mock_response = MagicMock()
@@ -156,7 +166,9 @@ class TestOpenTopoDataElevationService:
             mock_get.return_value = mock_response
 
             elevation_data = await elevation_service.get_elevation_simple(
-                35.6893514, -78.7767045, "srtm90m",
+                35.6893514,
+                -78.7767045,
+                dataset="srtm90m",
             )
 
             assert elevation_data is not None
@@ -171,7 +183,9 @@ class TestOpenTopoDataElevationService:
             mock_get.side_effect = httpx.HTTPError("Connection failed")
 
             elevation_data = await elevation_service.get_elevation_simple(
-                35.6893514, -78.7767045, "srtm90m",
+                35.6893514,
+                -78.7767045,
+                dataset="srtm90m",
             )
 
             assert elevation_data is None
@@ -194,7 +208,9 @@ class TestLocationServerElevation:
             dataset="srtm90m",
         )
 
-        with patch("mcp_location_server.server.get_elevation_service") as mock_get_service:
+        with patch(
+            "mcp_location_server.server.get_elevation_service"
+        ) as mock_get_service:
             mock_service = AsyncMock()
             mock_response = MagicMock()
             mock_response.results = [MagicMock()]
@@ -205,7 +221,9 @@ class TestLocationServerElevation:
             mock_service.get_elevation.return_value = mock_response
             mock_get_service.return_value = mock_service
 
-            result = await location_server.get_elevation(35.6893514, -78.7767045, "srtm90m")
+            result = await location_server.get_elevation(
+                35.6893514, -78.7767045, dataset="srtm90m"
+            )
 
             assert result["found"] is True
             assert result["latitude"] == TEST_LATITUDE
@@ -217,7 +235,9 @@ class TestLocationServerElevation:
     @pytest.mark.asyncio
     async def test_get_elevation_no_data(self, location_server):
         """Test elevation lookup with no data available."""
-        with patch("mcp_location_server.server.get_elevation_service") as mock_get_service:
+        with patch(
+            "mcp_location_server.server.get_elevation_service"
+        ) as mock_get_service:
             mock_service = AsyncMock()
             mock_response = MagicMock()
             mock_response.results = []
@@ -225,7 +245,9 @@ class TestLocationServerElevation:
             mock_service.get_elevation.return_value = mock_response
             mock_get_service.return_value = mock_service
 
-            result = await location_server.get_elevation(35.6893514, -78.7767045, "srtm90m")
+            result = await location_server.get_elevation(
+                35.6893514, -78.7767045, dataset="srtm90m"
+            )
 
             assert result["found"] is False
             assert result["latitude"] == TEST_LATITUDE
@@ -238,7 +260,9 @@ class TestLocationServerElevation:
     @pytest.mark.asyncio
     async def test_get_elevation_validation_error(self, location_server):
         """Test elevation lookup with invalid coordinates."""
-        result = await location_server.get_elevation(999.0, -78.7767045, "srtm90m")
+        result = await location_server.get_elevation(
+            999.0, -78.7767045, dataset="srtm90m"
+        )
 
         assert result["found"] is False
         assert "error" in result
@@ -247,12 +271,18 @@ class TestLocationServerElevation:
     @pytest.mark.asyncio
     async def test_get_elevation_http_error(self, location_server):
         """Test elevation lookup with HTTP error."""
-        with patch("mcp_location_server.server.get_elevation_service") as mock_get_service:
+        with patch(
+            "mcp_location_server.server.get_elevation_service"
+        ) as mock_get_service:
             mock_service = AsyncMock()
-            mock_service.get_elevation.side_effect = httpx.HTTPError("Connection failed")
+            mock_service.get_elevation.side_effect = httpx.HTTPError(
+                "Connection failed"
+            )
             mock_get_service.return_value = mock_service
 
-            result = await location_server.get_elevation(35.6893514, -78.7767045, "srtm90m")
+            result = await location_server.get_elevation(
+                35.6893514, -78.7767045, dataset="srtm90m"
+            )
 
             assert result["found"] is False
             assert "error" in result

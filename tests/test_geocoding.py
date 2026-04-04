@@ -27,7 +27,11 @@ class TestNominatimGeocodingService:
         # Mock response data
         mock_response_data = [
             {
-                "display_name": "White House, 1600, Pennsylvania Avenue Northwest, Washington, DC 20500, United States",
+                "display_name": (
+                    "White House, 1600, Pennsylvania Avenue "
+                    "Northwest, Washington, DC 20500, "
+                    "United States"
+                ),
                 "lat": "38.8976633",
                 "lon": "-77.0365739",
                 "importance": 0.9,
@@ -103,7 +107,9 @@ class TestNominatimGeocodingService:
     async def test_reverse_geocode_success(self):
         """Test successful reverse geocoding."""
         mock_response_data = {
-            "display_name": "1600 Pennsylvania Avenue NW, Washington, DC 20500, United States",
+            "display_name": (
+                "1600 Pennsylvania Avenue NW, " "Washington, DC 20500, United States"
+            ),
             "lat": "38.8976633",
             "lon": "-77.0365739",
             "importance": 0.9,
@@ -179,11 +185,15 @@ class TestNominatimGeocodingService:
             await service.reverse_geocode(-91.0, 0.0)
 
         # Test invalid longitude (too high)
-        with pytest.raises(ValueError, match="Longitude must be between -180.0 and 180.0"):
+        with pytest.raises(
+            ValueError, match="Longitude must be between -180.0 and 180.0"
+        ):
             await service.reverse_geocode(0.0, 181.0)
 
         # Test invalid longitude (too low)
-        with pytest.raises(ValueError, match="Longitude must be between -180.0 and 180.0"):
+        with pytest.raises(
+            ValueError, match="Longitude must be between -180.0 and 180.0"
+        ):
             await service.reverse_geocode(0.0, -181.0)
 
         # Test non-numeric coordinates

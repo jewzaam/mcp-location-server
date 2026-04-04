@@ -30,13 +30,15 @@ class LocationServer:
     async def geocode_address(
         self,
         query: str,
+        *,
         limit: int = 1,
     ) -> dict[str, Any]:
         """
         Geocode an address or location name to latitude/longitude coordinates.
 
         Args:
-            query: The address or location to geocode (e.g., "1600 Pennsylvania Avenue, Washington DC")
+            query: The address or location to geocode
+                (e.g., "1600 Pennsylvania Avenue, Washington DC")
             limit: Maximum number of results to return (1-10, default: 1)
 
         Returns:
@@ -118,7 +120,9 @@ class LocationServer:
         Returns:
             Dictionary containing reverse geocoding result
         """
-        self.logger.info("Reverse geocoding request: lat=%f, lon=%f", latitude, longitude)
+        self.logger.info(
+            "Reverse geocoding request: lat=%f, lon=%f", latitude, longitude
+        )
 
         try:
             # Get the geocoding service
@@ -187,6 +191,7 @@ class LocationServer:
         self,
         latitude: float,
         longitude: float,
+        *,
         dataset: str = "srtm90m",
     ) -> dict[str, Any]:
         """
@@ -200,7 +205,12 @@ class LocationServer:
         Returns:
             Dictionary containing elevation data in meters and feet
         """
-        self.logger.info("Elevation request: lat=%f, lon=%f, dataset=%s", latitude, longitude, dataset)
+        self.logger.info(
+            "Elevation request: lat=%f, lon=%f, dataset=%s",
+            latitude,
+            longitude,
+            dataset,
+        )
 
         try:
             # Validate the request
@@ -276,13 +286,17 @@ async def create_server() -> FastMCP:
     mcp = FastMCP(
         "location_mcp_server",
         instructions=(
-            "You are a location and geocoding assistant with elevation lookup capabilities. "
-            "Available tools: (1) geocode - convert addresses/places to coordinates, "
+            "You are a location and geocoding assistant "
+            "with elevation lookup capabilities. "
+            "Available tools: "
+            "(1) geocode - convert addresses/places to coordinates, "
             "(2) reverse_geocode - convert coordinates to addresses, "
             "(3) get_elevation - get elevation data for coordinates. "
-            "Common workflows: address → geocode → coordinates → get_elevation, "
-            "or coordinates → reverse_geocode → address. "
-            "You can handle addresses, cities, landmarks, and points of interest worldwide."
+            "Common workflows: "
+            "address -> geocode -> coordinates -> get_elevation, "
+            "or coordinates -> reverse_geocode -> address. "
+            "You can handle addresses, cities, landmarks, "
+            "and points of interest worldwide."
         ),
     )
 
@@ -295,11 +309,16 @@ async def create_server() -> FastMCP:
         "geocode",
         title="Geocode address or location to coordinates",
         description=(
-            "Convert an address, city name, or landmark to latitude/longitude coordinates. "
-            "Supports various formats like '123 Main St, City, State', 'Tokyo, Japan', "
-            "or 'Eiffel Tower'. Returns up to the specified number of results. "
-            "Use these coordinates with get_elevation to find elevation data, or use "
-            "reverse_geocode to convert coordinates back to addresses."
+            "Convert an address, city name, or landmark "
+            "to latitude/longitude coordinates. "
+            "Supports various formats like "
+            "'123 Main St, City, State', 'Tokyo, Japan', "
+            "or 'Eiffel Tower'. "
+            "Returns up to the specified number of results. "
+            "Use these coordinates with get_elevation "
+            "to find elevation data, or use "
+            "reverse_geocode to convert coordinates "
+            "back to addresses."
         ),
         annotations=ToolAnnotations(
             readOnlyHint=True,
@@ -316,10 +335,14 @@ async def create_server() -> FastMCP:
         "reverse_geocode",
         title="Reverse geocode coordinates to address",
         description=(
-            "Convert latitude/longitude coordinates to a human-readable address. "
-            "Provide decimal degree coordinates (e.g., lat=40.7128, lon=-74.0060 for NYC). "
-            "Useful for interpreting coordinates from GPS devices, maps, or other sources. "
-            "Coordinates can come from the geocode tool or be provided directly."
+            "Convert latitude/longitude coordinates "
+            "to a human-readable address. "
+            "Provide decimal degree coordinates "
+            "(e.g., lat=40.7128, lon=-74.0060 for NYC). "
+            "Useful for interpreting coordinates from "
+            "GPS devices, maps, or other sources. "
+            "Coordinates can come from the geocode tool "
+            "or be provided directly."
         ),
         annotations=ToolAnnotations(
             readOnlyHint=True,
@@ -336,12 +359,20 @@ async def create_server() -> FastMCP:
         "get_elevation",
         title="Get elevation data for coordinates",
         description=(
-            "Get elevation data for latitude/longitude coordinates. "
-            "Returns elevation in both meters and feet above sea level. "
-            "Provide decimal degree coordinates (e.g., lat=35.6894, lon=-78.7767). "
-            "If you have an address or place name, use the geocode tool first to get coordinates. "
-            "Optionally specify dataset: srtm90m (90m resolution, global), srtm30m (30m, global), "
-            "aster30m (30m, global), ned10m (10m, US only), or others. Default is srtm90m."
+            "Get elevation data for "
+            "latitude/longitude coordinates. "
+            "Returns elevation in both meters and feet "
+            "above sea level. "
+            "Provide decimal degree coordinates "
+            "(e.g., lat=35.6894, lon=-78.7767). "
+            "If you have an address or place name, "
+            "use the geocode tool first to get coordinates. "
+            "Optionally specify dataset: "
+            "srtm90m (90m resolution, global), "
+            "srtm30m (30m, global), "
+            "aster30m (30m, global), "
+            "ned10m (10m, US only), or others. "
+            "Default is srtm90m."
         ),
         annotations=ToolAnnotations(
             readOnlyHint=True,

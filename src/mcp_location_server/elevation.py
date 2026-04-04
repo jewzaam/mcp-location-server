@@ -22,7 +22,7 @@ from .models import ElevationData, ElevationRequest, ElevationResponse, Elevatio
 class ElevationRateLimiter:
     """Rate limiter for Open Topo Data API (1 call per second)."""
 
-    def __init__(self, requests_per_second: float = 1.0) -> None:
+    def __init__(self, *, requests_per_second: float = 1.0) -> None:
         self.min_interval = 1.0 / requests_per_second
         self.last_request_time = 0.0
 
@@ -51,6 +51,7 @@ class OpenTopoDataElevationService:
 
     def __init__(
         self,
+        *,
         base_url: str = "https://api.opentopodata.org",
         user_agent: str = "mcp-location-server/0.1.0",
         timeout: float = 10.0,
@@ -73,7 +74,12 @@ class OpenTopoDataElevationService:
         """Async context manager entry."""
         return self
 
-    async def __aexit__(self, exc_type: type[BaseException] | None, exc_val: BaseException | None, exc_tb: types.TracebackType | None) -> None:
+    async def __aexit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_val: BaseException | None,
+        exc_tb: types.TracebackType | None,
+    ) -> None:
         """Async context manager exit."""
         await self.client.aclose()
 
@@ -149,7 +155,10 @@ class OpenTopoDataElevationService:
 
         except httpx.HTTPError as e:
             # Re-raise with more context
-            msg = f"Failed to get elevation for ({request.latitude}, {request.longitude}): {e!s}"
+            msg = (
+                f"Failed to get elevation for "
+                f"({request.latitude}, {request.longitude}): {e!s}"
+            )
             raise httpx.HTTPError(msg) from e
         except (ValueError, KeyError) as e:
             # Handle JSON parsing errors
@@ -160,6 +169,7 @@ class OpenTopoDataElevationService:
         self,
         latitude: float,
         longitude: float,
+        *,
         dataset: str = "srtm90m",
     ) -> ElevationData | None:
         """

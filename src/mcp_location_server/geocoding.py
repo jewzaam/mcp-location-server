@@ -7,7 +7,10 @@ from __future__ import annotations
 
 import asyncio
 import time
-from typing import Any
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    import types
 
 import httpx
 from typing_extensions import Self
@@ -42,7 +45,7 @@ def _parse_geocode_item(item: dict[str, Any]) -> GeocodeResult | None:
 class RateLimiter:
     """Rate limiter that enforces 1 request per second for Nominatim usage policy."""
 
-    def __init__(self, requests_per_second: float = 1.0) -> None:
+    def __init__(self, *, requests_per_second: float = 1.0) -> None:
         self.min_interval = 1.0 / requests_per_second
         self.last_request_time = 0.0
 
@@ -63,6 +66,7 @@ class NominatimGeocodingService:
 
     def __init__(
         self,
+        *,
         base_url: str = "https://nominatim.openstreetmap.org",
         user_agent: str = "mcp-location-server/0.1.0",
         timeout: float = 10.0,
@@ -86,7 +90,12 @@ class NominatimGeocodingService:
         """Async context manager entry."""
         return self
 
-    async def __aexit__(self, exc_type: type[BaseException] | None, exc_val: BaseException | None, exc_tb: types.TracebackType | None) -> None:
+    async def __aexit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_val: BaseException | None,
+        exc_tb: types.TracebackType | None,
+    ) -> None:
         """Async context manager exit."""
         await self.client.aclose()
 
@@ -176,11 +185,16 @@ class NominatimGeocodingService:
             raise ValueError(msg) from e
 
         if not (MIN_LATITUDE <= lat <= MAX_LATITUDE):
-            msg = f"Latitude must be between {MIN_LATITUDE} and {MAX_LATITUDE}, got {lat}"
+            msg = (
+                f"Latitude must be between {MIN_LATITUDE} and {MAX_LATITUDE}, got {lat}"
+            )
             raise ValueError(msg)
 
         if not (MIN_LONGITUDE <= lon <= MAX_LONGITUDE):
-            msg = f"Longitude must be between {MIN_LONGITUDE} and {MAX_LONGITUDE}, got {lon}"
+            msg = (
+                f"Longitude must be between "
+                f"{MIN_LONGITUDE} and {MAX_LONGITUDE}, got {lon}"
+            )
             raise ValueError(msg)
 
         # Respect rate limits

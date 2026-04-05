@@ -13,21 +13,80 @@ A Model Context Protocol (MCP) server for geocoding, reverse geocoding, and elev
 - **Free & open**: No API key required
 - **Rate limited**: Respects 1 req/sec API usage policies
 
-## Installation
+## Requirements
 
-### Development
+- Python 3.12+
+- [uv](https://docs.astral.sh/uv/) (recommended)
+
+## Installation
 
 ```bash
 git clone https://github.com/jewzaam/mcp-location-server.git
 cd mcp-location-server
+```
+
+Install globally using either `uv` or `pipx` — both create an isolated venv so other pip operations can't break the install:
+
+```bash
+make install       # uses uv tool install
+make pipx          # uses pipx install
+```
+
+For development (includes test/lint tooling):
+
+```bash
 make install-dev
 ```
 
-### From Git
+## Configure Claude Code
+
+**User-scoped** (available in all projects):
 
 ```bash
-pip install git+https://github.com/jewzaam/mcp-location-server.git
+claude mcp add --scope user location -- mcp-location-server
 ```
+
+Alternatively, use `uvx` so Claude Code resolves the tool fresh from the local source each invocation (most resilient to breakage):
+
+```bash
+claude mcp add --scope user location -- uvx --from /path/to/mcp-location-server mcp-location-server
+```
+
+**Project-scoped** (stored in `.mcp.json` in the project root):
+
+```bash
+claude mcp add --scope project location -- mcp-location-server
+```
+
+Verify the server is registered:
+
+```bash
+claude mcp list
+```
+
+## Configure Cursor IDE
+
+Add to your Cursor MCP configuration (`~/.cursor/mcp.json` on Linux):
+
+```json
+{
+  "mcpServers": {
+    "location": {
+      "command": "/absolute/path/to/mcp-location-server/.venv/bin/python",
+      "args": ["-m", "mcp_location_server.server"],
+      "cwd": "/absolute/path/to/mcp-location-server"
+    }
+  }
+}
+```
+
+Or use the automated setup:
+
+```bash
+make install-cursor
+```
+
+After configuration, restart Cursor and enable the "location" server in Settings > MCP.
 
 ## Usage
 
@@ -60,30 +119,6 @@ Get elevation data for coordinates:
 "What's the elevation at 35.6894, -78.7767?"
 "Get elevation for Mount Washington's coordinates"
 ```
-
-### Cursor IDE Setup
-
-Add to your Cursor MCP configuration (`~/.cursor/mcp.json` on Linux):
-
-```json
-{
-  "mcpServers": {
-    "location": {
-      "command": "/absolute/path/to/mcp-location-server/.venv/bin/python",
-      "args": ["-m", "mcp_location_server.server"],
-      "cwd": "/absolute/path/to/mcp-location-server"
-    }
-  }
-}
-```
-
-Or use the automated setup:
-
-```bash
-make install-cursor
-```
-
-After configuration, restart Cursor and enable the "location" server in Settings > MCP.
 
 ## Development
 

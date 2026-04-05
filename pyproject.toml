@@ -41,7 +41,7 @@ dev = [
 ]
 
 [project.scripts]
-mcp-location-server = "mcp_location_server.server:main"
+mcp-location-server = "mcp_location_server.server:main_sync"
 
 [tool.setuptools.packages.find]
 where = ["src"]

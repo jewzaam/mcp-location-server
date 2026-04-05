@@ -424,5 +424,10 @@ async def main() -> None:
         await close_elevation_service()
 
 
-if __name__ == "__main__":
+def main_sync() -> None:
+    """Synchronous entry point for console_scripts."""
     asyncio.run(main())
+
+
+if __name__ == "__main__":
+    main_sync()
